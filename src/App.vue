@@ -1,5 +1,7 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import DialogLayout from '@/layouts/Dialog.vue';
+</script>
 
 <template>
-  <p>Initiating project</p>
+  <dialog-layout />
 </template>
