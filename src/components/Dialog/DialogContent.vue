@@ -126,6 +126,7 @@ const handleFocusLoop = (e: FocusEvent) => {
     v-show="state.open"
     :ref="setDialogRef"
     :aria-modal="modal"
+    :data-loop="loop"
     :data-static="props.static"
     :id="ids.content"
     :aria-label="label"
