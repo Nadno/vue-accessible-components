@@ -7,11 +7,11 @@ import {
 export const useDropdownMenuProvider = (
   name = 'useDropdownMenuProvider',
 ): DropdownMenuProvider => {
-  const dialogProvider = inject<DropdownMenuProvider>(
+  const provider = inject<DropdownMenuProvider>(
     DROPDOWN_MENU_PROVIDER_NAME,
   );
-  if (!dialogProvider)
-    throw new Error(`You should use "${name}" within a "DialogRoot" only!`);
+  if (!provider)
+    throw new Error(`You should use "${name}" within a "DropdownMenuRoot" only!`);
 
-  return dialogProvider;
+  return provider;
 };
