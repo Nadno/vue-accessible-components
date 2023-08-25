@@ -100,12 +100,18 @@ const selectedItem = ref<keyof typeof MENU_ITEMS>('second');
 .dropdown-menu-container {
   width: 100%;
   max-width: 250px;
-
+  min-height: 300px;
+  max-height: 100vh;
+  
   & :deep(.dropdown-menu) {
     width: 100%;
+    min-height: inherit;
+    max-height: inherit;
     display: flex;
     flex-direction: column;
 
+    overflow-y: auto;
+    scrollbar-width: thin;
     padding: 4px;
     border-radius: 4px;
     background-color: lighten(#111, 10%);

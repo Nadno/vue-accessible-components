@@ -48,6 +48,15 @@ const state = reactive<DropdownMenuState>({
     options: {
       placement: 'bottom',
       strategy: 'fixed',
+      modifiers: [
+        {
+          name: 'preventOverflow',
+          options: {
+            rootBoundary: 'document.body',
+            altAxis: true,
+          }
+        }
+      ],
     },
   }),
   dropdownMenuContentRef = ref<HTMLElement | null>(null),
@@ -62,6 +71,10 @@ const setOptions = (options: UsePopperOptions) =>
   (state.options = {
     ...state.options,
     ...options,
+    modifiers: [
+      ...(state.options.modifiers || []),
+      ...(options.modifiers || []),
+    ],
   });
 
 const popper = usePopper(
