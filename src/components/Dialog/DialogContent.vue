@@ -2,7 +2,12 @@
 import { watch, onMounted } from 'vue';
 import { useDialogProvider } from './useDialogProvider';
 
-import { useFocusOutside, useClickOutside } from '@/composables';
+import {
+  useFocusOutside,
+  useClickOutside,
+  useToggleVisibility,
+} from '@/composables';
+import { withRef } from '../utils';
 
 export type DialogContentProps = {
   modal?: boolean;
@@ -66,21 +71,18 @@ watch(
   () => (state.open ? emit('open') : emit('close')),
 );
 
-const handleToggleModal = () => {
-  const $dialog = dialogRef.value,
-    $trigger = triggerRef.value;
-  if (!$dialog || !$trigger) return;
+useToggleVisibility(
+  () => state.open,
+  (open) => {
+    withRef(
+      dialogRef,
+      ($dialog) => ($dialog.dataset.state = open ? 'open' : 'closed'),
+    );
 
-  requestAnimationFrame(() => {
-    if (!state.open) $trigger.focus();
-    $dialog.setAttribute('data-state', state.open ? 'open' : 'closed');
-    document.body.style.overflow = state.open ? 'hidden' : '';
-  });
-};
-
-watch(() => state.open, handleToggleModal, {
-  flush: 'post',
-});
+    withRef(triggerRef, ($trigger) => !open && $trigger.focus());
+    document.body.style.overflow = open ? 'hidden' : '';
+  },
+);
 
 const focusElement = (position = 'first') => {
   const $dialog = dialogRef.value;

@@ -1,4 +1,5 @@
-import { MaybeRef, toValue } from 'vue';
+import { withRef } from '@/components/utils';
+import { MaybeRef } from 'vue';
 
 export type UseRefValue<TValue, TReturn> = (value: TValue) => TReturn;
 
@@ -16,9 +17,5 @@ export const useNullableRef = <TValue>(
   return <TReturn = void>(
     callback: UseRefValue<TValue, TReturn>,
     defaultValue?: TReturn,
-  ) => {
-    const value = toValue(ref);
-    if (!value) return defaultValue;
-    return callback(value);
-  };
+  ) => withRef(ref, callback, defaultValue);
 };

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { onMounted, watch } from 'vue';
 
-import { useFocusOutside, useNullableRef } from '@/composables';
+import { PopoverContentAligns, PopoverContentSides, useFocusOutside, useNullableRef } from '@/composables';
 import { useDropdownMenuProvider } from './useDropdownMenuProvider';
 
-export type DropdownMenuContentSides = 'top' | 'bottom' | 'left' | 'right';
-export type DropdownMenuContentAligns = 'start' | 'end' | 'center';
+export type DropdownMenuContentSides = PopoverContentSides;
+export type DropdownMenuContentAligns = PopoverContentAligns;
 export type DropdownMenuContentOrientations = 'vertical' | 'horizontal';
 
 export type DropdownMenuContentProps = {
@@ -47,14 +47,13 @@ const {
   setOptions,
   dropdownMenuTriggerRef,
   dropdownMenuContentRef,
-  dropdownMenuContainerRef,
   setDropdownMenuContentRef,
   setDropdownMenuContainerRef,
 } = useDropdownMenuProvider('DropdownMenuContent');
 
 setOptions({
-  placement:
-    props.align === 'center' ? props.side : `${props.side}-${props.align}`,
+  side: props.side,
+  align: props.align,
   modifiers: [
     {
       name: 'offset',
@@ -158,16 +157,9 @@ const unfocusFocusedDropdownItem = () => {
 };
 
 const handleToggleDropdown = () => {
-  const $dropdown = dropdownMenuContentRef.value,
-    $container = dropdownMenuContainerRef.value;
-
-  requestAnimationFrame(() => {
-    if (!$dropdown || !$container) return;
-    const currentState = state.open ? 'open' : 'closed';
-    $dropdown.setAttribute('data-state', currentState);
-    $container.setAttribute('data-state', currentState);
-    state.open ? focusFirstDropdownItem() : unfocusFocusedDropdownItem();
-  });
+  requestAnimationFrame(() =>
+    state.open ? focusFirstDropdownItem() : unfocusFocusedDropdownItem(),
+  );
 };
 
 watch(() => state.open, handleToggleDropdown, {
