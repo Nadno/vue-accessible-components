@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, watch } from 'vue';
 
-import { PopoverContentAligns, PopoverContentSides, useFocusOutside, useNullableRef } from '@/composables';
+import { PopoverContentAligns, PopoverContentSides, useInteractOutside, useNullableRef } from '@/composables';
 import { useDropdownMenuProvider } from './useDropdownMenuProvider';
 
 export type DropdownMenuContentSides = PopoverContentSides;
@@ -67,7 +67,7 @@ setOptions({
 const withContent = useNullableRef<HTMLElement>(dropdownMenuContentRef),
   withTrigger = useNullableRef<HTMLElement>(dropdownMenuTriggerRef);
 
-const handleFocusOut = () => {
+const handleInteractOut = () => {
   /**
    * `setTimeout` avoids re-opening the dropdown menu when
    * clicking at its trigger.
@@ -78,7 +78,7 @@ const handleFocusOut = () => {
   }, 150);
 };
 
-useFocusOutside(() => state.open, dropdownMenuContentRef, handleFocusOut);
+useInteractOutside(() => state.open, dropdownMenuContentRef, handleInteractOut);
 
 const handleSeparatorsOrientation = () =>
   withContent(($menu) =>
