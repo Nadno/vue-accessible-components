@@ -30,13 +30,13 @@ export const useClickOutside = (
        * otherwise the event is fired right after being added.
        */
       if (!$element.value) return;
-      window.addEventListener('click', clickOutsideHandler);
+      window.addEventListener('pointerdown', clickOutsideHandler);
     });
   };
 
   const unbind = () => {
     if (!$element.value) return;
-    window.removeEventListener('click', clickOutsideHandler);
+    window.removeEventListener('pointerdown', clickOutsideHandler);
   };
 
   watchPostEffect(() => (toValue(state) ? bind() : unbind()));
