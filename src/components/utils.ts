@@ -22,9 +22,10 @@ export type CreateRefSetter<TElement extends Element = Element> = (
   ref: Ref<TElement | null>,
 ) => RefSetter;
 
-export const refSetter: CreateRefSetter<HTMLElement> = (ref) => (node) => {
-  ref.value = node;
-};
+export const refSetter: CreateRefSetter<HTMLElement> =
+  (ref) => (nodeOrComponent) => {
+    ref.value = nodeOrComponent.el ? nodeOrComponent.el : nodeOrComponent;
+  };
 
 export type WithRefValue<TValue, TReturn> = (value: TValue) => TReturn;
 

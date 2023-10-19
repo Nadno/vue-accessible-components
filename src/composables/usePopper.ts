@@ -1,4 +1,12 @@
-import { ref, onMounted, onUpdated, onUnmounted, MaybeRef, toValue } from 'vue';
+import {
+  ref,
+  watch,
+  onMounted,
+  onUpdated,
+  onUnmounted,
+  MaybeRef,
+  toValue,
+} from 'vue';
 
 import {
   createPopper,
@@ -19,21 +27,25 @@ export const usePopper = (
 
   const withPopper = useNullableRef<PopperInstance>(popperRef);
 
-  onMounted(() => {
+  const create = () => {
     const $reference = toValue(reference),
       $popper = toValue(popper);
 
     if (!$reference || !$popper) return;
 
     popperRef.value = createPopper($reference, $popper, options);
-  });
+  };
+
+  onMounted(create);
 
   const setOptions = (options: UsePopperOptions) =>
     withPopper((popper) => popper.setOptions(options));
 
   onUpdated(() => setOptions(options));
 
-  onUnmounted(() => withPopper((popper) => popper.destroy()));
+  const destroy = () => withPopper((popper) => popper.destroy());
+
+  onUnmounted(destroy);
 
   const update = () => withPopper((popper) => popper.update());
 

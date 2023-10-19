@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { usePopoverProvider } from './usePopoverProvider';
+import { useMergedAriaAttributes } from '@/composables/useMergedAriaAttributes';
 
 export type PopoverTrigger = {
   is?: any;
@@ -12,19 +13,23 @@ withDefaults(defineProps<PopoverTrigger>(), {
 
 const { type, id, triggerId, state, toggle, setPopoverTriggerRef } =
   usePopoverProvider('PopoverTrigger');
+
+const ariaAttributes = useMergedAriaAttributes({
+  'aria-controls': id,
+});
 </script>
 
 <template>
   <component
-    :ref="setPopoverTriggerRef"
+    v-bind="{ ...$attrs, ...ariaAttributes }"
     :is="is"
     :id="triggerId"
     :data-state="state.open ? 'open' : 'closed'"
-    :aria-controls="id"
     :aria-expanded="state.open"
     :aria-haspopup="type"
     :aria-label="label"
-    @click.capture="toggle"
+    @click="toggle"
+    @vue:mounted="setPopoverTriggerRef"
   >
     <slot />
   </component>

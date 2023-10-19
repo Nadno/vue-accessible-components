@@ -6,12 +6,38 @@ import {
   PopoverTrigger,
   PopoverClose,
 } from '@/components/Popover';
+
+import {
+  TooltipRoot,
+  TooltipContent,
+  TooltipPortal,
+  TooltipTrigger,
+} from '@/components/Tooltip';
 </script>
 
 <template>
   <div class="popover-layout">
     <popover-root>
-      <popover-trigger class="popover-trigger">Open popover</popover-trigger>
+      <tooltip-root as-label>
+        <tooltip-trigger
+          :is="PopoverTrigger"
+          class="popover-trigger"
+          aria-labelledby="still-can-have-multiple-labelled-values"
+        >
+          [SOME ICON]
+        </tooltip-trigger>
+
+        <tooltip-portal>
+          <tooltip-content
+            container-class="tooltip"
+            side="top"
+            :offset="[0, 16]"
+            class="popover-tooltip"
+          >
+            Open popover
+          </tooltip-content>
+        </tooltip-portal>
+      </tooltip-root>
 
       <popover-portal>
         <popover-content
@@ -33,8 +59,35 @@ import {
           </div>
 
           <div class="actions">
-            <popover-close class="button">Accept</popover-close>
-            <popover-close class="button">Close</popover-close>
+            <tooltip-root>
+              <tooltip-trigger :is="PopoverClose" class="button">
+                Accept
+              </tooltip-trigger>
+
+              <tooltip-content
+                container-class="tooltip"
+                side="top"
+                :offset="[0, 16]"
+                class="popover-tooltip"
+              >
+                Accept and close.
+              </tooltip-content>
+            </tooltip-root>
+
+            <tooltip-root>
+              <tooltip-trigger :is="PopoverClose" class="button">
+                Close
+              </tooltip-trigger>
+
+              <tooltip-content
+                container-class="tooltip"
+                side="top"
+                :offset="[0, 16]"
+                class="popover-tooltip"
+              >
+                Just close.
+              </tooltip-content>
+            </tooltip-root>
           </div>
         </popover-content>
       </popover-portal>
@@ -106,5 +159,13 @@ import {
       margin-top: 24px;
     }
   }
+}
+
+.tooltip:deep(.popover-tooltip) {
+  padding: 8px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  border-radius: 4px;
+  background-color: lighten(#111, 10%);
 }
 </style>

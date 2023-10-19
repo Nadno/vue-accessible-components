@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import Portal, { PortalProps } from '../Portal.vue';
 
-export type PopoverPortalProps = PortalProps;
+export type TooltipPortalProps = PortalProps;
 
 defineProps<PortalProps>();
 </script>
