@@ -3,6 +3,7 @@ import DialogLayout from '@/layouts/Dialog.vue';
 import DropdownMenuLayout from '@/layouts/DropdownMenu.vue';
 import ProgressbarLayout from '@/layouts/Progressbar.vue';
 import PopoverLayout from '@/layouts/Popover.vue';
+import ToggleButtonLayout from '@/layouts/ToggleButton.vue';
 </script>
 
 <template>
@@ -10,4 +11,5 @@ import PopoverLayout from '@/layouts/Popover.vue';
   <dropdown-menu-layout />
   <popover-layout />
   <progressbar-layout />
+  <toggle-button-layout />
 </template>
