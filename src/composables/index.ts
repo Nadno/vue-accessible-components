@@ -7,3 +7,4 @@ export * from './useFocusOutside';
 export * from './useInteractOutside';
 export * from './useToggleVisibility';
 export * from './useLabelFor';
+export * from './useKeyboardArrowFocus';
