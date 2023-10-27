@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import AriaLabel, { AriaLabelProps } from '../AriaLabel.vue';
 
-export type ToggleButtonGroupLabelProps = AriaLabelProps;
+export type SwitchGroupLabelProps = AriaLabelProps;
 
-defineProps<ToggleButtonGroupLabelProps>();
+defineProps<SwitchGroupLabelProps>();
 </script>
 
 <template>
