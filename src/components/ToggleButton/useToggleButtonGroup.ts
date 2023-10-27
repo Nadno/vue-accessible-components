@@ -1,4 +1,4 @@
-import { inject, onBeforeUnmount, onBeforeMount } from 'vue';
+import { inject, onBeforeUnmount, onMounted } from 'vue';
 import {
   TOGGLE_BUTTON_GROUP_PROVIDER_NAME,
   ToggleButtonGroupProvider,
@@ -18,7 +18,7 @@ export const useToggleButtonGroupProvider = (
   const registerButton = () =>
     withGroup((group) => group.register(name as string, !!initialValue));
 
-    onBeforeMount(registerButton);
+    onMounted(registerButton);
 
   const unregisterButton = () =>
     withGroup((group) => group.unregister(name as string));

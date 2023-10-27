@@ -4,7 +4,7 @@ const BUTTON_NAME_NOT_STRING_ERROR_MESSAGE =
 </script>
 
 <script lang="ts" setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeMount, ref, watch } from 'vue';
 import { useNullableRef } from '@/composables';
 
 import { useToggleButtonGroupProvider } from './useToggleButtonGroup';
@@ -35,13 +35,13 @@ const isPressed = props.defaultPressed ?? !!props.modelValue,
   pressed = ref(isPressed),
   name = props.name;
 
-const isDisabled = computed(() => {
-  if (typeof props.disabled === 'boolean') return props.disabled;
-  return withGroup((group) => group.isDisabled.value);
-});
-
 const group = useToggleButtonGroupProvider(props.name as string, isPressed),
   withGroup = useNullableRef<ToggleButtonGroupProvider>(group);
+
+const isDisabled = computed(() => {
+  if (typeof props.disabled === 'boolean') return props.disabled;
+  return withGroup((group) => group.state.disabled);
+});
 
 const validateButtonName = () => {
   if (!name) return;
@@ -49,13 +49,12 @@ const validateButtonName = () => {
     throw new TypeError(BUTTON_NAME_NOT_STRING_ERROR_MESSAGE);
 };
 
-onMounted(validateButtonName);
+onBeforeMount(validateButtonName);
 
 const updatePressedValueOnGroupChange = () => {
-  if (!group || !name) return;
-  if (!Object.hasOwn(group.buttons, name)) return;
+  if (!group || !name || !group.has(name)) return;
 
-  const newValue = group.buttons[name as string];
+  const newValue = group.isChecked(name);
   if (pressed.value === newValue) return;
 
   const hasModelValue = typeof props.modelValue === 'boolean';
@@ -65,7 +64,7 @@ const updatePressedValueOnGroupChange = () => {
 };
 
 watch(
-  () => group && name && group.buttons[name],
+  () => group && name && group.state.checkers[name],
   updatePressedValueOnGroupChange,
 );
 
@@ -92,10 +91,11 @@ const handleChange = (e: Event) => {
     type="button"
     :aria-label="label"
     :aria-pressed="pressed"
-    :aria-disabled="isDisabled"
+    :aria-disabled="isDisabled || undefined"
+    :tabindex="group && -1"
     :data-name="name"
     :data-pressed="pressed"
-    :data-disabled="isDisabled"
+    :data-disabled="isDisabled || undefined"
     @click="handleChange"
   >
     <slot />
