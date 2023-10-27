@@ -8,3 +8,4 @@ export * from './useInteractOutside';
 export * from './useToggleVisibility';
 export * from './useLabelFor';
 export * from './useKeyboardArrowFocus';
+export * from './useCheckGroup';

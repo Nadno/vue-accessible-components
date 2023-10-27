@@ -6,15 +6,14 @@ const MISSING_BUTTON_NAME_ERROR_MESSAGE =
 </script>
 
 <script lang="ts" setup>
+import { nextTick, onUpdated, provide, ref } from 'vue';
 import {
+  CheckGroup,
+  CheckGroupOptions,
   KeyboardArrowFocusOrientations,
+  useCheckGroup,
   useKeyboardArrowFocus,
 } from '@/composables';
-import { computed, nextTick, provide, reactive, ref, Ref } from 'vue';
-
-export type RegisterHandler = (name: string, pressed: boolean) => void;
-
-export type UnregisterHandler = (name: string) => void;
 
 export type ChangeHandler = (
   name: string,
@@ -51,9 +50,19 @@ const props = withDefaults(defineProps<ToggleButtonGroupProps>(), {
 
 const emit = defineEmits<ToggleButtonGroupEmits>();
 
+const getCheckGroupOptions = (): CheckGroupOptions => ({
+  allowAllUnchecked: props.allowAllUnpressed,
+  disabled: props.disabled,
+  defaultChecked: props.defaultPressed,
+  multiple: props.multiple,
+});
+
 const $group = ref<HTMLElement | null>(null),
-  buttons: Record<string, boolean> = reactive({}),
-  isDisabled = computed(() => props.disabled);
+  group = useCheckGroup(getCheckGroupOptions(), {
+    missingNameOnRegister: MISSING_BUTTON_NAME_ERROR_MESSAGE,
+    registeredChecker:
+      'The ToggleButton name "{{name}}" has already been used!',
+  });
 
 useKeyboardArrowFocus({
   componentName: 'ToggleButtonGroup',
@@ -64,64 +73,22 @@ useKeyboardArrowFocus({
   loop: props.useFocusLooping,
 });
 
-const hasButton = (name: string) => Object.hasOwn(buttons, name);
+const updateCheckGroupOptions = () =>
+  Object.assign(group.state, getCheckGroupOptions());
 
-const preventMultiplePressed = (name: string) => {
-  if (props.multiple) return;
-  const currentPressed = Object.entries(buttons).find(
-    ([currentName, currentPressed]) => currentPressed && currentName !== name,
-  );
-
-  if (!currentPressed) return;
-  const [currentPressedName] = currentPressed;
-  buttons[currentPressedName] = false;
-};
-
-const preventAllUnpressed = () => {
-  if (props.allowAllUnpressed) return;
-  const defaultName = props.defaultPressed;
-  if (!defaultName || typeof defaultName !== 'string') return;
-
-  const isAllUnpressed = Object.values(buttons).every((pressed) => !pressed);
-  if (!isAllUnpressed) return;
-
-  buttons[defaultName] = true;
-};
-
-const register: RegisterHandler = (name, pressed) => {
-  if (!name) throw new Error(MISSING_BUTTON_NAME_ERROR_MESSAGE);
-
-  if (hasButton(name))
-    throw new Error(
-      'You cannot have multiple ToggleButton with the same name. \n' +
-        `Repeated name: "${name}."`,
-    );
-
-  if (pressed) preventMultiplePressed(name);
-  buttons[name] = pressed;
-  if (!pressed) preventAllUnpressed();
-};
-
-const unregister: UnregisterHandler = (name) => {
-  if (!name) throw new Error(MISSING_BUTTON_NAME_ERROR_MESSAGE);
-  delete buttons[name];
-};
+onUpdated(updateCheckGroupOptions);
 
 const change: ChangeHandler = (name, pressed, event) => {
-  if (pressed) preventMultiplePressed(name);
-
-  buttons[name] = pressed;
+  group.state.checkers[name] = pressed;
   emit('onChange', name, pressed, event);
 
-  if (!pressed) nextTick(preventAllUnpressed);
+  if (pressed) group.preventMultipleChecked(name);
+  if (!pressed) nextTick(() => group.preventAllUnchecked(name));
 };
 
 provide<ToggleButtonGroupProvider>(TOGGLE_BUTTON_GROUP_PROVIDER_NAME, {
-  buttons,
-  register,
-  unregister,
+  ...group,
   change,
-  isDisabled,
 });
 </script>
 
@@ -129,8 +96,8 @@ provide<ToggleButtonGroupProvider>(TOGGLE_BUTTON_GROUP_PROVIDER_NAME, {
   <div
     role="group"
     ref="$group"
-    :aria-disabled="disabled || undefined"
-    :data-disabled="disabled || undefined"
+    :aria-disabled="group.state.disabled || undefined"
+    :data-disabled="group.state.disabled || undefined"
     :data-multiple="multiple || undefined"
     :data-focus-orientation="focusOrientation"
   >
