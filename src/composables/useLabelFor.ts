@@ -1,45 +1,51 @@
 import { MaybeRef, onMounted, watch, toValue, onUnmounted } from 'vue';
 
-const ARIA_LABEL_BY_ATTRIBUTE = 'aria-labelledby';
+const ARIA_LABEL_BY_ATTRIBUTE = 'aria-labelledby',
+  ARIA_DESCRIPTION_BY_ATTRIBUTE = 'aria-describedby';
 
-export const useLabelFor = (targetId: string, labelId: MaybeRef<string>) => {
-  const withTarget = (callback: ($target: HTMLElement) => void) => {
-    const $target = document.getElementById(targetId);
-    if (!$target) return;
-    callback($target);
+const createAriaConnectionHook = (ariaProperty: string) => {
+  return (targetId: string, id: MaybeRef<string>) => {
+    const withTarget = (callback: ($target: HTMLElement) => void) => {
+      const $target = document.getElementById(targetId);
+      if (!$target) return;
+      callback($target);
+    };
+
+    const setProperty = (label: string) => {
+      withTarget(($target) => {
+        const attribute = $target.getAttribute(ariaProperty);
+
+        const newValue = !attribute ? label : `${attribute} ${label}`;
+
+        $target.setAttribute(ariaProperty, newValue);
+      });
+    };
+
+    const removeProperty = (label: string) => {
+      withTarget(($target) => {
+        const attribute = $target.getAttribute(ariaProperty);
+        if (!attribute) return;
+
+        $target.setAttribute(ariaProperty, attribute.replace(label, '').trim());
+      });
+    };
+
+    onMounted(() => setProperty(toValue(id)));
+
+    watch(
+      () => toValue(id),
+      (newLabel, oldLabel) => {
+        removeProperty(oldLabel);
+        setProperty(newLabel);
+      },
+    );
+
+    onUnmounted(() => removeProperty(toValue(id)));
   };
-
-  const setLabel = (label: string) => {
-    withTarget(($target) => {
-      const attribute = $target.getAttribute(ARIA_LABEL_BY_ATTRIBUTE);
-
-      const newValue = !attribute ? label : `${attribute} ${label}`;
-
-      $target.setAttribute(ARIA_LABEL_BY_ATTRIBUTE, newValue);
-    });
-  };
-
-  const removeLabel = (label: string) => {
-    withTarget(($target) => {
-      const attribute = $target.getAttribute(ARIA_LABEL_BY_ATTRIBUTE);
-      if (!attribute) return;
-
-      $target.setAttribute(
-        ARIA_LABEL_BY_ATTRIBUTE,
-        attribute.replace(label, '').trim(),
-      );
-    });
-  };
-
-  onMounted(() => setLabel(toValue(labelId)));
-
-  watch(
-    () => toValue(labelId),
-    (newLabel, oldLabel) => {
-      removeLabel(oldLabel);
-      setLabel(newLabel);
-    },
-  );
-
-  onUnmounted(() => removeLabel(toValue(labelId)));
 };
+
+export const useLabelFor = createAriaConnectionHook(ARIA_LABEL_BY_ATTRIBUTE);
+
+export const useDescriptionFor = createAriaConnectionHook(
+  ARIA_DESCRIPTION_BY_ATTRIBUTE,
+);

@@ -5,6 +5,7 @@ import ProgressbarLayout from '@/layouts/Progressbar.vue';
 import PopoverLayout from '@/layouts/Popover.vue';
 import ToggleButtonLayout from '@/layouts/ToggleButton.vue';
 import SwitchLayout from '@/layouts/Switch.vue';
+import RadioLayout from '@/layouts/Radio.vue';
 </script>
 
 <template>
@@ -14,4 +15,5 @@ import SwitchLayout from '@/layouts/Switch.vue';
   <progressbar-layout />
   <toggle-button-layout />
   <switch-layout />
+  <radio-layout />
 </template>
