@@ -7,7 +7,7 @@ import {
   toRef,
 } from 'vue';
 
-export type ClickOutsideHandler = (e: MouseEvent | FocusEvent) => void;
+export type ClickOutsideHandler = (e: MouseEvent) => void;
 
 export const useClickOutside = (
   state: MaybeRefOrGetter<boolean>,

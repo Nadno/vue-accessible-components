@@ -25,16 +25,16 @@ export type PopoverState = {
 
 export type PopoverTypes = 'dialog' | 'grid' | 'listbox' | 'menu' | 'tree';
 
-export type PopoverOptions = {
+export type PopoverOptions<TState extends object> = {
   id?: string;
-  state?: Partial<PopoverState>;
+  state?: TState;
   type?: PopoverTypes;
 };
 
-export type PopoverData = {
+export type PopoverData<TState extends object> = {
   id: string;
   triggerId: string;
-  state: PopoverState;
+  state: TState;
   type: PopoverTypes | 'true';
 };
 
@@ -46,7 +46,7 @@ export type PopoverActions = {
   setOptions: (options: PopoverPopperOptions) => void;
 };
 
-export type Popover = PopoverData &
+export type Popover<TState extends object> = PopoverData<TState> &
   PopoverActions & {
     setPopoverContainerRef: RefSetter;
     popoverContainerRef: Ref<HTMLElement | null>;
@@ -56,7 +56,9 @@ export type Popover = PopoverData &
     popoverTriggerRef: Ref<HTMLElement | null>;
   };
 
-export const usePopover = (options: PopoverOptions = {}): Popover => {
+export const usePopover = <TState extends object = {}>(
+  options: PopoverOptions<TState & Partial<PopoverState>> = {},
+): Popover<PopoverState & TState> => {
   const id = useId(options.id);
 
   const state = reactive<PopoverState>({
@@ -75,7 +77,7 @@ export const usePopover = (options: PopoverOptions = {}): Popover => {
         ],
       },
       ...options.state,
-    }),
+    }) as PopoverState & TState,
     popoverContainerRef = ref<HTMLElement | null>(null),
     popoverContentRef = ref<HTMLElement | null>(null),
     popoverTriggerRef = ref<HTMLElement | null>(null);
