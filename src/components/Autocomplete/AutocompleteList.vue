@@ -144,7 +144,7 @@ const handleSelectOption = (e: MouseEvent) => {
 };
 
 const handleFocusByMouseOver = (e: MouseEvent) => {
-  if (autocomplete.isChooshing) return;
+  if (autocomplete.isChoosing) return;
 
   const $target = e.target as HTMLElement;
 
@@ -157,7 +157,7 @@ const handleFocusByMouseOver = (e: MouseEvent) => {
 };
 
 const handleFocusoutByMouseOut = (e: MouseEvent) => {
-  if (autocomplete.isChooshing) return;
+  if (autocomplete.isChoosing) return;
 
   const $target = e.target as HTMLElement;
 
@@ -187,7 +187,7 @@ const handleFocusoutByMouseOut = (e: MouseEvent) => {
       :aria-label="label"
       :data-side="side"
       :data-align="align"
-      :data-choosing="autocomplete.isChooshing || undefined"
+      :data-choosing="autocomplete.isChoosing || undefined"
       data-state="closed"
       tabindex="-1"
       @click="handleSelectOption"

@@ -16,7 +16,7 @@ import {
 
 export type DropdownMenuState = PopoverState;
 
-export type DropdownMenuProvider = PopoverData &
+export type DropdownMenuProvider = PopoverData<PopoverState> &
   PopoverActions & {
     setDropdownMenuContainerRef: RefSetter;
     dropdownMenuContainerRef: Ref<HTMLElement | null>;

@@ -22,19 +22,19 @@ export type AutocompleteRootProps<TValue> = {
   getOptionValue?: (option: TValue, index: number) => string;
 };
 
-export type AutocompleteState<Tvalue> = {
+export type AutocompleteState<TValue> = {
   search: string;
   _typedSearch: string;
   deferredSearch: string;
-  isChooshing: boolean;
+  isChoosing: boolean;
   hasInlineSuggestion?: boolean;
   canSuggest?: boolean;
-  options: Tvalue[];
-  filteredOptions: Tvalue[];
+  options: TValue[];
+  filteredOptions: TValue[];
   activeIndex: number;
 };
 
-export type AutocompleteProvider = PopoverData &
+export type AutocompleteProvider = PopoverData<PopoverState> &
   PopoverActions & {
     suggest: (suggestionIndex: number) => void;
     getOptions: () => any[];
@@ -126,7 +126,7 @@ const autocomplete = reactive<AutocompleteState<any>>({
   options: [],
   filteredOptions: [],
   activeIndex: -1,
-  isChooshing: false,
+  isChoosing: false,
 });
 
 const getOptions = (): any[] => {
@@ -146,7 +146,7 @@ const getActiveOptionValue = (): string => {
 
 const suggest = (suggestionIndex: number) => {
   autocomplete.activeIndex = suggestionIndex;
-  autocomplete.isChooshing = true;
+  autocomplete.isChoosing = true;
   autocomplete._typedSearch = autocomplete.search;
   autocomplete.search = getActiveOptionValue();
   autocomplete.hasInlineSuggestion = true;

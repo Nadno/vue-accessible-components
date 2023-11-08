@@ -42,18 +42,18 @@ const handleSearchSubmit = () => {
 <template>
   <form class="autocomplete-layout" @submit.prevent="handleSearchSubmit">
     <autocomplete-root :get-option-value="getOptionValue">
-      <autocomplete-label html-for="serach-for-user-autocomplete">
+      <autocomplete-label html-for="search-for-user-autocomplete">
         Search for user:
       </autocomplete-label>
 
       <autocomplete-input
-        id="serach-for-user-autocomplete"
+        id="search-for-user-autocomplete"
         class="autocomplete-input"
       />
 
       <autocomplete-list
-        container-class="autcomplete-list-container"
-        class="autcomplete-list"
+        container-class="autocomplete-list-container"
+        class="autocomplete-list"
         option-class="item"
         with-new-option-at="end"
         :options="autocompleteOptions"
@@ -97,7 +97,7 @@ const handleSearchSubmit = () => {
   background-color: whitesmoke;
 }
 
-.autcomplete-list-container {
+.autocomplete-list-container {
   width: 100%;
   max-width: 300px;
   max-height: 100vh;
@@ -106,7 +106,7 @@ const handleSearchSubmit = () => {
   background-color: lighten(#111, 10%);
   z-index: 10;
 
-  & :deep(.autcomplete-list) {
+  & :deep(.autocomplete-list) {
     width: 100%;
     min-height: inherit;
     max-height: inherit;

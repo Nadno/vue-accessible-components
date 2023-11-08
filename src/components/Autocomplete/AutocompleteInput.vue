@@ -89,7 +89,7 @@ const getCurrentFocusedOption = ($input: HTMLElement): HTMLElement | null => {
   return $option;
 };
 
-const removeFocustedOptionOnClose = () => {
+const removeFocusedOptionOnClose = () => {
   if (state.open) return;
   withAutocompleteInput(($input) => {
     const $current = getCurrentFocusedOption($input);
@@ -103,7 +103,7 @@ const removeFocustedOptionOnClose = () => {
   });
 };
 
-watch(() => state.open, removeFocustedOptionOnClose);
+watch(() => state.open, removeFocusedOptionOnClose);
 
 const handleFocusInput = () => {
   if (!props.showAutocompleteOnFocus) return;
@@ -118,12 +118,12 @@ const handleClickOutsideInput = (e: MouseEvent | FocusEvent) => {
   withAutocompleteList(($list) => {
     if ($list.contains($target)) return;
 
-    if (autocomplete.isChooshing) {
+    if (autocomplete.isChoosing) {
       withAutocompleteInput(($input) =>
         $input.setSelectionRange($input.selectionEnd, $input.selectionEnd),
       );
 
-      autocomplete.isChooshing = false;
+      autocomplete.isChoosing = false;
       autocomplete.deferredSearch = getActiveOptionValue();
     }
 
@@ -140,13 +140,13 @@ useInteractOutside(
 const handleEscapeAutocomplete = () => {
   if (!state.open) return;
 
-  if (autocomplete.isChooshing) {
-    autocomplete.isChooshing = false;
+  if (autocomplete.isChoosing) {
+    autocomplete.isChoosing = false;
   } else if (autocomplete.hasInlineSuggestion) {
     autocomplete.hasInlineSuggestion = false;
   }
 
-  if (autocomplete.isChooshing || autocomplete.hasInlineSuggestion) {
+  if (autocomplete.isChoosing || autocomplete.hasInlineSuggestion) {
     autocomplete.search = autocomplete._typedSearch;
     autocomplete._typedSearch = '';
   }
@@ -249,7 +249,7 @@ const handleFocusNextOption = (e: Event) => {
 
       autocomplete._typedSearch = autocomplete.search;
       autocomplete.search = getActiveOptionValue();
-      autocomplete.isChooshing = true;
+      autocomplete.isChoosing = true;
 
       return;
     }
@@ -277,7 +277,7 @@ const handleFocusPreviousOption = (e: Event) => {
 
       autocomplete._typedSearch = autocomplete.search;
       autocomplete.search = getActiveOptionValue();
-      autocomplete.isChooshing = true;
+      autocomplete.isChoosing = true;
 
       return;
     }
@@ -313,7 +313,7 @@ const handleInputValue = (e: InputEvent) => {
 };
 
 const handleSelectOption = (e: Event) => {
-  if (!state.open || !autocomplete.isChooshing) return;
+  if (!state.open || !autocomplete.isChoosing) return;
 
   e.preventDefault();
 
@@ -349,7 +349,7 @@ const handleSelectOption = (e: Event) => {
     :aria-label="label"
     :aria-autocomplete="autocompleteType"
     :data-state="state.open ? 'open' : 'closed'"
-    :data-choosing="autocomplete.isChooshing || undefined"
+    :data-choosing="autocomplete.isChoosing || undefined"
     autocomplete="off"
     @focus="handleFocusInput"
     @keydown.tab.exact="handleSelectOption"
