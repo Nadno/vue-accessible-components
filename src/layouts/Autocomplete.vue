@@ -101,7 +101,9 @@ const handleSearchSubmit = () => {
   width: 100%;
   max-width: 300px;
   max-height: 100vh;
+  min-height: 200px;
   overflow-y: auto;
+  scrollbar-width: thin;
 
   background-color: lighten(#111, 10%);
   z-index: 10;
@@ -109,12 +111,10 @@ const handleSearchSubmit = () => {
   & :deep(.autocomplete-list) {
     width: 100%;
     min-height: inherit;
-    max-height: inherit;
+
     display: flex;
     flex-direction: column;
 
-    overflow-y: auto;
-    scrollbar-width: thin;
     padding: 4px;
 
     opacity: 0;

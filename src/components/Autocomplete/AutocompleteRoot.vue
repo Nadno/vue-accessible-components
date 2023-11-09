@@ -1,5 +1,7 @@
 <script lang="ts">
 export const AUTOCOMPLETE_PROVIDER_NAME = 'autocomplete-provider';
+
+export const AUTOCOMPLETE_PREVENT_OVERFLOW_PADDING = 32;
 </script>
 
 <script setup lang="ts">
@@ -7,14 +9,14 @@ import { Ref, provide, reactive } from 'vue';
 
 import { RefSetter } from '@/components/utils';
 
+import { preventOverflowWithMaxHeight } from '@/utils/popperPreventOverflowWithMaxHeight';
+
 import {
   usePopover,
   PopoverData,
   PopoverActions,
   PopoverState,
 } from '@/composables';
-
-import { Modifier, detectOverflow } from '@popperjs/core';
 
 export type AutocompleteRootProps<TValue> = {
   id?: string;
@@ -59,44 +61,6 @@ defineOptions({
 
 const props = defineProps<AutocompleteRootProps<any>>();
 
-const preventOverflowWithMaxHeight = (
-  padding: number,
-): Modifier<'preventOverflowWithMaxHeight', {}> => {
-  return {
-    enabled: true,
-    name: 'preventOverflowWithMaxHeight',
-    phase: 'main',
-    fn: ({ state }) => {
-      const { placement, styles, elements } = state,
-        overflow = detectOverflow(state);
-
-      const isTop = placement.startsWith('top') && overflow.top > 0,
-        isBottom =
-          !isTop && placement.startsWith('bottom') && overflow.bottom > 0;
-
-      if (!isTop && !isBottom) return;
-
-      const popperHeight = elements.popper.getBoundingClientRect().height,
-        maxHeight =
-          (isTop
-            ? popperHeight - overflow.top
-            : popperHeight - overflow.bottom) - padding;
-
-      if (maxHeight < 0) return;
-      return {
-        ...state,
-        styles: {
-          ...styles,
-          popper: {
-            ...styles.popper,
-            maxHeight: `${maxHeight}px`,
-          },
-        },
-      };
-    },
-  };
-};
-
 const getOptionId =
     props.getOptionId || ((_: any, index: number) => `option[${index}]`),
   getOptionValue = props.getOptionValue || ((value: any) => String(value));
@@ -114,7 +78,9 @@ const {
   type: 'listbox',
   state: {
     options: {
-      modifiers: [preventOverflowWithMaxHeight(32)],
+      modifiers: [
+        preventOverflowWithMaxHeight(AUTOCOMPLETE_PREVENT_OVERFLOW_PADDING),
+      ],
     },
   },
 });
