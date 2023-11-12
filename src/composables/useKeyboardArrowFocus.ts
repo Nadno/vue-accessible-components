@@ -1,18 +1,22 @@
-import { MaybeRef, toValue, onMounted } from 'vue';
+import { MaybeRef, toValue, onMounted, reactive, computed } from 'vue';
 import { useEventListener } from './useEventListener';
+import { omitBy } from 'lodash';
 
 export type KeyboardArrowFocusOrientations = 'horizontal' | 'vertical' | 'both';
+
+export type KeyboardArrowFocusState = {
+  orientation: KeyboardArrowFocusOrientations;
+  loop: boolean;
+  allowTabFocusing: boolean;
+};
 
 export type UseKeyboardArrowFocusOptions = {
   componentName?: string;
   container: MaybeRef<HTMLElement | null>;
   target: string;
-  direction: KeyboardArrowFocusOrientations;
-  loop?: boolean;
-  allowTabFocusing?: boolean;
   handleSibling?(sibling: HTMLElement): HTMLElement | null;
   handleTabindex?(container: HTMLElement): void;
-};
+} & Partial<KeyboardArrowFocusState>;
 
 const HORIZONTAL_KEYS = ['ArrowRight', 'ArrowLeft'],
   VERTICAL_KEYS = ['ArrowUp', 'ArrowDown'],
@@ -38,19 +42,48 @@ export const useKeyboardArrowFocus = ({
   componentName = 'useKeyboardArrowFocus',
   container,
   target,
-  direction,
+  orientation = 'horizontal',
   loop = false,
   allowTabFocusing = false,
   handleSibling,
   handleTabindex,
-}: UseKeyboardArrowFocusOptions) => {
-  const isBothDirection = direction === 'both',
-    isVerticalDirection = direction === 'vertical',
-    directionKeys = isBothDirection
+}: UseKeyboardArrowFocusOptions): ((
+  state: Partial<KeyboardArrowFocusState>,
+) => KeyboardArrowFocusState) => {
+  const state = reactive<KeyboardArrowFocusState>({
+    loop,
+    allowTabFocusing,
+    orientation,
+  });
+
+  const setKeyboardArrowFocusState = ({
+    loop,
+    allowTabFocusing,
+    orientation,
+  }: Partial<KeyboardArrowFocusState>) => {
+    const newState = {
+      ...state,
+      ...omitBy(
+        { loop, allowTabFocusing, orientation },
+        (value) => value == null,
+      ),
+    };
+
+    Object.assign(state, newState);
+
+    return newState;
+  };
+
+  const directionKeys = computed(() => {
+    const isBothDirection = state.orientation === 'both',
+      isVerticalDirection = state.orientation === 'vertical';
+
+    return isBothDirection
       ? [...VERTICAL_KEYS, ...HORIZONTAL_KEYS]
       : isVerticalDirection
       ? VERTICAL_KEYS
       : HORIZONTAL_KEYS;
+  });
 
   const getDirectChild = ($container: HTMLElement, $target: HTMLElement) => {
     let $element: HTMLElement | null = $target,
@@ -118,9 +151,9 @@ export const useKeyboardArrowFocus = ({
 
   const handleFocusByKeyboard = (e: KeyboardEvent) => {
     const key = e.key,
-      isArrowFocus = directionKeys.includes(key),
-      isTabFocus = !isArrowFocus && allowTabFocusing && key === 'Tab',
-      isLoopAllowed = !isTabFocus && loop;
+      isArrowFocus = directionKeys.value.includes(key),
+      isTabFocus = !isArrowFocus && state.allowTabFocusing && key === 'Tab',
+      isLoopAllowed = !isTabFocus && state.loop;
 
     if (!isArrowFocus && !isTabFocus) return;
 
@@ -200,4 +233,6 @@ export const useKeyboardArrowFocus = ({
   };
 
   onMounted(makeFirstChildFocusable);
+
+  return setKeyboardArrowFocusState;
 };

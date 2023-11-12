@@ -67,7 +67,7 @@ const $group = ref<HTMLElement | null>(null),
 useKeyboardArrowFocus({
   componentName: 'ToggleButtonGroup',
   container: $group,
-  direction: props.focusOrientation,
+  orientation: props.focusOrientation,
   target: '[data-name]',
   allowTabFocusing: props.useTabFocusing,
   loop: props.useFocusLooping,

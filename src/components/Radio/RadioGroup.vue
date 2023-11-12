@@ -65,7 +65,7 @@ const $group = ref<HTMLElement | null>(null),
 useKeyboardArrowFocus({
   componentName: 'RadioGroup',
   container: $group,
-  direction: props.focusOrientation,
+  orientation: props.focusOrientation,
   target: '[data-name]',
   allowTabFocusing: false,
   loop: props.useFocusLooping,
