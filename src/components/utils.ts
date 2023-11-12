@@ -24,6 +24,7 @@ export type CreateRefSetter<TElement extends Element = Element> = (
 
 export const refSetter: CreateRefSetter<HTMLElement> =
   (ref) => (nodeOrComponent) => {
+    if (!nodeOrComponent) return;
     ref.value = nodeOrComponent.el ? nodeOrComponent.el : nodeOrComponent;
   };
 
