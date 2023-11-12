@@ -19,8 +19,8 @@ import { useNullableRef } from './useNullableRef';
 export type UsePopperOptions = Partial<Options>;
 
 export const usePopper = (
-  reference: MaybeRef<HTMLElement | null | undefined>,
-  popper: MaybeRef<HTMLElement | null | undefined>,
+  referenceElement: MaybeRef<HTMLElement | null | undefined>,
+  popperElement: MaybeRef<HTMLElement | null | undefined>,
   options: UsePopperOptions,
 ) => {
   const popperRef = ref<PopperInstance | null>(null);
@@ -28,8 +28,8 @@ export const usePopper = (
   const withPopper = useNullableRef<PopperInstance>(popperRef);
 
   const create = () => {
-    const $reference = toValue(reference),
-      $popper = toValue(popper);
+    const $reference = toValue(referenceElement),
+      $popper = toValue(popperElement);
 
     if (!$reference || !$popper) return;
 
@@ -49,5 +49,24 @@ export const usePopper = (
 
   const update = () => withPopper((popper) => popper.update());
 
-  return { update, setOptions };
+  const handleElementRefChanges = () => {
+    withPopper((popper) => {
+      const $reference = toValue(referenceElement),
+        $popper = toValue(popperElement);
+
+      if (!$reference || !$popper) return;
+      Object.assign(popper.state.elements, {
+        popper: $popper,
+        reference: $reference,
+      });
+
+      popper.update();
+    });
+  };
+
+  watch([referenceElement, popperElement], handleElementRefChanges);
+
+  const debugPopper = () => console.log('***POPPER_DEBUG', popperRef.value);
+
+  return { update, setOptions, debugPopper };
 };
