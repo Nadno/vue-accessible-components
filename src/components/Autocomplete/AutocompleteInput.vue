@@ -5,6 +5,8 @@ import { debounce } from 'lodash';
 import { useAutocompleteProvider } from './useAutocompleteProvider';
 import { useInteractOutside, useNullableRef } from '@/composables';
 
+import { isCompletelyVisibleOnVertical } from '@/utils/isCompletelyVisible';
+
 export type AutocompleteInputProps<TValue> = {
   modelValue?: TValue;
   label?: string;
@@ -41,6 +43,7 @@ const {
   getActiveOptionValue,
   autocompleteInputRef,
   autocompleteListRef,
+  autocompleteContainerRef,
   setAutocompleteInputRef,
 } = useAutocompleteProvider('AutocompleteInput');
 
@@ -154,49 +157,14 @@ const handleEscapeAutocomplete = () => {
   close();
 };
 
-const isCompletlyVisibleOnVertical = (
-  $parent: Element,
-  $child: HTMLElement,
-) => {
-  const parent = $parent.getBoundingClientRect();
-  const child = $child.getBoundingClientRect();
-
-  /**
-   * child.top -> current position of the element into the viewport screen
-   * child.bottom (top + height) -> vertical end position of the element into the viewport screen
-   *
-   * thus:
-   *
-   * child.bottom >= parent.top = it is starting to being visible on parent top
-   * child.bottom < parent.top = it is not visible above the parent
-   *
-   * child.top > parent.bottom = it is not visible below the parent
-   * child.top <= parent.bottom = it is stating to being visible on parent bottom
-   *
-   * thus:
-   *
-   * child.top >= parent.top = it is completly visible on parent top
-   * child.bottom <= parent.bottom = it is completly visible on bottom top
-   *
-   * thus:
-   *
-   * (
-   *  child.top >= parent.top &&
-   *  child.bottom <= parent.bottom
-   * ) = it is completly visible on both sides, so none of the child sides
-   *     are overflowing the parent element.
-   */
-  return child.top >= parent.top && child.bottom <= parent.bottom;
-};
-
 const focusOption = ($input: HTMLInputElement, $option: HTMLElement) => {
   $option.dataset.focused = 'true';
   $option.dataset.active = 'true';
   $input.setAttribute('aria-activedescendant', $option.id);
 
   requestAnimationFrame(() => {
-    if (!autocompleteListRef.value) return;
-    if (isCompletlyVisibleOnVertical(autocompleteListRef.value, $option))
+    if (!autocompleteContainerRef.value) return;
+    if (isCompletelyVisibleOnVertical(autocompleteContainerRef.value, $option))
       return;
 
     $option.scrollIntoView({
