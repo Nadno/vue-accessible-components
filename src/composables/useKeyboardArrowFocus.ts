@@ -8,6 +8,7 @@ export type KeyboardArrowFocusState = {
   orientation: KeyboardArrowFocusOrientations;
   loop: boolean;
   allowTabFocusing: boolean;
+  useHoverIndex: boolean;
 };
 
 export type UseKeyboardArrowFocusOptions = {
@@ -45,6 +46,7 @@ export const useKeyboardArrowFocus = ({
   orientation = 'horizontal',
   loop = false,
   allowTabFocusing = false,
+  useHoverIndex = true,
   handleSibling,
   handleTabindex,
 }: UseKeyboardArrowFocusOptions): ((
@@ -54,6 +56,7 @@ export const useKeyboardArrowFocus = ({
     loop,
     allowTabFocusing,
     orientation,
+    useHoverIndex,
   });
 
   const setKeyboardArrowFocusState = ({
@@ -124,7 +127,7 @@ export const useKeyboardArrowFocus = ({
     if (!$next)
       throw new Error('The handleSibling method did not return any element!');
 
-    $next.setAttribute('tabindex', '0');
+    if (state.useHoverIndex) $next.setAttribute('tabindex', '0');
     $next.focus();
   };
 
@@ -202,6 +205,8 @@ export const useKeyboardArrowFocus = ({
   useEventListener(container, 'keydown', handleFocusByKeyboard);
 
   const handleFocusout = (e: FocusEvent) => {
+    if (!state.useHoverIndex) return;
+
     const $container = toValue(container);
     if (!$container) return;
 
@@ -222,6 +227,7 @@ export const useKeyboardArrowFocus = ({
   useEventListener(container, 'focusout', handleFocusout);
 
   const makeFirstChildFocusable = () => {
+    if (!state.useHoverIndex) return;
     if (handleTabindex) {
       const $container = toValue(container);
       return $container && handleTabindex($container);
