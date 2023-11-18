@@ -153,6 +153,9 @@ export const useKeyboardArrowFocus = ({
   };
 
   const handleFocusByKeyboard = (e: KeyboardEvent) => {
+    const $target = e.target as HTMLElement;
+    if (!$target.matches(target)) return;
+
     const key = e.key,
       isArrowFocus = directionKeys.value.includes(key),
       isTabFocus = !isArrowFocus && state.allowTabFocusing && key === 'Tab',
@@ -170,7 +173,6 @@ export const useKeyboardArrowFocus = ({
         : 'next',
       isForward = focusDirection === 'next';
 
-    const $target = e.target as HTMLElement;
     if ($container === $target)
       return focusEdgeChild(isForward ? 'first' : 'last');
 
