@@ -7,6 +7,7 @@ import AutocompleteLayout from '@/layouts/Autocomplete.vue';
 import ToggleButtonLayout from '@/layouts/ToggleButton.vue';
 import SwitchLayout from '@/layouts/Switch.vue';
 import RadioLayout from '@/layouts/Radio.vue';
+import AccordionLayout from '@/layouts/Accordion.vue';
 import TabsLayout from '@/layouts/Tabs.vue';
 
 import {
@@ -54,7 +55,7 @@ const tabPanelTransitionProps = {
     <div class="tab-bar">
       <tab-title is="h1" class="title">Vue Accessible components</tab-title>
 
-      <tab-list class="tab-list">
+      <tab-list class="tab-list -wrap">
         <tab-item class="item" name="dialog-layout">Dialog</tab-item>
         <tab-item class="item" name="dropdown-menu-layout">
           Dropdown menu
@@ -69,6 +70,7 @@ const tabPanelTransitionProps = {
         </tab-item>
         <tab-item class="item" name="switch-layout">Switch</tab-item>
         <tab-item class="item" name="radio-layout">Radio</tab-item>
+        <tab-item class="item" name="accordion-layout">Accordion</tab-item>
         <tab-item class="item" name="tabs-layout">Tabs</tab-item>
       </tab-list>
 
@@ -130,6 +132,12 @@ const tabPanelTransitionProps = {
             <tabs-layout />
           </tab-panel>
         </transition>
+
+        <transition v-bind="tabPanelTransitionProps">
+          <tab-panel class="panel" name="accordion-layout" prevent-focus>
+            <accordion-layout />
+          </tab-panel>
+        </transition>
       </tab-content>
     </div>
   </tab-root>
@@ -157,6 +165,10 @@ const tabPanelTransitionProps = {
 .tab-list {
   width: 100%;
   display: flex;
+
+  &.-wrap {
+    flex-wrap: wrap;
+  }
 
   & > .item {
     cursor: pointer;
