@@ -75,12 +75,12 @@ export const useCheckGroup = (
       throw new Error(errors.registeredChecker.replaceAll('{{name}}', name));
 
     const defaultCheckedName = state.defaultChecked;
-    if (defaultCheckedName === name) checked = true;
+    if (defaultCheckedName) checked = defaultCheckedName === name;
 
     checkers[name] = checked;
 
     if (checked) preventMultipleChecked(name);
-    if (!checked) preventAllUnchecked(name);
+    if (!checked && !defaultCheckedName) preventAllUnchecked(name);
   };
 
   const unregister: UnregisterHandler = (name) => {
