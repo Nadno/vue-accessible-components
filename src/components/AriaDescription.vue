@@ -15,7 +15,7 @@ const htmlFor = Array.isArray(props.htmlFor)
 
 const id = useId(props.id);
 
-useDescriptionFor(htmlFor, id);
+useDescriptionFor(props.htmlFor, id);
 </script>
 
 <template>

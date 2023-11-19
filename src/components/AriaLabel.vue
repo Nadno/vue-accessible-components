@@ -15,7 +15,7 @@ const htmlFor = Array.isArray(props.htmlFor)
 
 const id = useId(props.id);
 
-useLabelFor(htmlFor, id);
+useLabelFor(props.htmlFor, id);
 </script>
 
 <template>
