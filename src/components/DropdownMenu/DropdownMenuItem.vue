@@ -27,13 +27,14 @@ const handleSelectMenuItem = () => {
 
 <template>
   <button
+    type="button"
+    role="menuitem"
+    tabindex="-1"
+    data-menu-item="button"
     :data-disabled="disabled"
     :data-autoclose="autoclose"
     :aria-disabled="disabled"
     @click="handleSelectMenuItem"
-    data-menu-item
-    role="menuitem"
-    tabindex="-1"
   >
     <slot />
   </button>

@@ -1,3 +1,12 @@
+<script lang="ts">
+export const MENU_ITEM_SELECTOR = '[data-menu-item]',
+  MENU_ITEM_DISABLED_SELECTOR = '[data-disabled="true"]',
+  MENU_ITEM_NO_AUTOCLOSE_SELECTOR = '[data-autoclose="false"]',
+  MENU_SEPARATOR_SELECTOR = '[data-menu-separator]',
+  MENU_LABEL_SELECTOR = '[data-menu-label]',
+  MENU_GROUP_SELECTOR = '[data-menu-group]';
+</script>
+
 <script setup lang="ts">
 import { onMounted, watch } from 'vue';
 
@@ -16,19 +25,14 @@ export type DropdownMenuContentOrientations = 'vertical' | 'horizontal';
 
 export type DropdownMenuContentProps = {
   offset?: [number, number];
-  side: DropdownMenuContentSides;
-  align: DropdownMenuContentAligns;
+  side?: DropdownMenuContentSides;
+  align?: DropdownMenuContentAligns;
   orientation?: DropdownMenuContentOrientations;
   loop?: boolean;
   label?: string;
   autoclose?: boolean;
   containerClass?: string | object;
 };
-
-const MENU_ITEM_SELECTOR = '[data-menu-item]',
-  MENU_ITEM_DISABLED_SELECTOR = '[data-disabled="true"]',
-  MENU_ITEM_NO_AUTOCLOSE_SELECTOR = '[data-autoclose="false"]',
-  MENU_SEPARATOR_SELECTOR = '[data-separator]';
 
 defineOptions({
   inheritAttrs: false,
@@ -85,27 +89,44 @@ const handleInteractOut = () => {
 useInteractOutside(() => state.open, dropdownMenuContentRef, handleInteractOut);
 
 const handleSeparatorsOrientation = () =>
-  withContent(($menu) =>
+  withContent(($menu) => {
+    $menu.querySelectorAll(MENU_SEPARATOR_SELECTOR).forEach(($separator) => {
+      $separator.setAttribute('aria-orientation', props.orientation);
+      $separator.setAttribute('data-orientation', props.orientation);
+    });
+
     $menu
-      .querySelectorAll(':scope > [data-separator]')
-      .forEach(($separator) =>
-        $separator.setAttribute('aria-orientation', props.orientation),
-      ),
-  );
+      .querySelectorAll(MENU_GROUP_SELECTOR)
+      .forEach(($group) =>
+        $group.setAttribute('data-orientation', props.orientation),
+      );
+  });
 
 onMounted(handleSeparatorsOrientation);
 
 watch(() => props.orientation, handleSeparatorsOrientation);
 
 const getDropdownMenuItemAt = (at: 'begin' | 'end'): HTMLElement | null => {
-  const atSelector = at === 'begin' ? 'first-of-type' : 'last-of-type';
-  return withContent(
-    ($content) =>
-      $content.querySelector<HTMLElement>(
-        `${MENU_ITEM_SELECTOR}:${atSelector}`,
-      ),
-    null,
-  );
+  return withContent(($content) => {
+    const directionSelector =
+      at === 'begin' ? 'nextElementSibling' : 'previousElementSibling';
+
+    let $found = (
+      at === 'begin' ? $content.firstElementChild : $content.lastElementChild
+    ) as HTMLElement;
+
+    while (
+      $found &&
+      (!$found.matches(MENU_ITEM_SELECTOR) &&
+        !$found.matches(MENU_GROUP_SELECTOR))
+    ) {
+      $found = $found[directionSelector] as HTMLElement;
+    }
+
+    console.log($found)
+
+    return $found;
+  }, null);
 };
 
 const handleToggleDropdown = () => {
@@ -124,8 +145,8 @@ watch(() => state.open, handleToggleDropdown, {
 const setKeyboardArrowFocusState = useKeyboardArrowFocus({
   componentName: 'DropdownMenuContent',
   container: dropdownMenuContentRef,
-  target: MENU_ITEM_SELECTOR,
-  skip: MENU_SEPARATOR_SELECTOR,
+  target: [MENU_ITEM_SELECTOR, MENU_GROUP_SELECTOR],
+  subcontainer: MENU_GROUP_SELECTOR,
   loop: props.loop,
   orientation: props.orientation,
 });
