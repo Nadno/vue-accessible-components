@@ -2,6 +2,8 @@ import { MaybeRef, toValue, onMounted, reactive, computed } from 'vue';
 import { useEventListener } from './useEventListener';
 import { omitBy } from 'lodash';
 
+export type HTMLElementSelector = string;
+
 export type KeyboardArrowFocusOrientations = 'horizontal' | 'vertical' | 'both';
 
 export type KeyboardArrowFocusState = {
@@ -14,7 +16,8 @@ export type KeyboardArrowFocusState = {
 export type UseKeyboardArrowFocusOptions = {
   componentName?: string;
   container: MaybeRef<HTMLElement | null>;
-  target: string;
+  target: HTMLElementSelector;
+  skip?: HTMLElementSelector;
   handleSibling?(sibling: HTMLElement): HTMLElement | null;
   handleTabindex?(container: HTMLElement): void;
 } & Partial<KeyboardArrowFocusState>;
@@ -43,6 +46,7 @@ export const useKeyboardArrowFocus = ({
   componentName = 'useKeyboardArrowFocus',
   container,
   target,
+  skip,
   orientation = 'horizontal',
   loop = false,
   allowTabFocusing = false,
@@ -109,9 +113,16 @@ export const useKeyboardArrowFocus = ({
   };
 
   const focusSibling = ($prev: HTMLElement, direction: 'prev' | 'next') => {
-    let $next = $prev[
-      direction === 'next' ? 'nextElementSibling' : 'previousElementSibling'
-    ] as HTMLElement | null;
+    const siblingKey =
+      direction === 'next'
+        ? 'nextElementSibling'
+        : ('previousElementSibling' as const);
+
+    let $next = $prev[siblingKey] as HTMLElement | null;
+
+    while (skip && $next && $next.matches(skip)) {
+      $next = $next[siblingKey] as HTMLElement;
+    }
 
     if (!$next) return;
     if (!$next.matches(target)) $next = $next.querySelector(target);
