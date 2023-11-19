@@ -16,42 +16,31 @@ export type KeyboardArrowFocusState = {
 export type UseKeyboardArrowFocusOptions = {
   componentName?: string;
   container: MaybeRef<HTMLElement | null>;
-  target: HTMLElementSelector;
-  skip?: HTMLElementSelector;
-  handleSibling?(sibling: HTMLElement): HTMLElement | null;
+  subcontainer?: HTMLElementSelector;
+  target: HTMLElementSelector | HTMLElementSelector[];
   handleTabindex?(container: HTMLElement): void;
 } & Partial<KeyboardArrowFocusState>;
+
+export type FocusDirections = 'forward' | 'backward';
 
 const HORIZONTAL_KEYS = ['ArrowRight', 'ArrowLeft'],
   VERTICAL_KEYS = ['ArrowUp', 'ArrowDown'],
   KEYS_TO_DIR_MAP = {
-    ArrowRight: 'next',
-    ArrowLeft: 'prev',
-    ArrowUp: 'prev',
-    ArrowDown: 'next',
+    ArrowRight: 'forward',
+    ArrowLeft: 'backward',
+    ArrowUp: 'backward',
+    ArrowDown: 'forward',
   } as const;
-
-const getElementSelector = ($target: HTMLElement) => {
-  let result = '';
-
-  if ($target.id) result += '#' + $target.id;
-
-  const classNames = Array.from($target.classList);
-  if (classNames.length) result += '.' + classNames.join('.');
-
-  return result;
-};
 
 export const useKeyboardArrowFocus = ({
   componentName = 'useKeyboardArrowFocus',
   container,
+  subcontainer,
   target,
-  skip,
   orientation = 'horizontal',
   loop = false,
   allowTabFocusing = false,
   useHoverIndex = true,
-  handleSibling,
   handleTabindex,
 }: UseKeyboardArrowFocusOptions): ((
   state: Partial<KeyboardArrowFocusState>,
@@ -62,6 +51,8 @@ export const useKeyboardArrowFocus = ({
     orientation,
     useHoverIndex,
   });
+
+  const targetSelector = Array.isArray(target) ? target.join(',') : target;
 
   const setKeyboardArrowFocusState = ({
     loop,
@@ -92,6 +83,24 @@ export const useKeyboardArrowFocus = ({
       : HORIZONTAL_KEYS;
   });
 
+  const getContainerFrom = ($target: HTMLElement): HTMLElement | null => {
+    let $result: HTMLElement | null = $target;
+
+    const $container = toValue(container);
+    if (!$container) return $result;
+    if (!subcontainer) return $container;
+
+    while (
+      $result &&
+      $result !== $container &&
+      !$result.matches(subcontainer)
+    ) {
+      $result = $result.parentElement;
+    }
+
+    return $result;
+  };
+
   const getDirectChild = ($container: HTMLElement, $target: HTMLElement) => {
     let $element: HTMLElement | null = $target,
       deepCount = 0;
@@ -112,60 +121,68 @@ export const useKeyboardArrowFocus = ({
     return $element;
   };
 
-  const focusSibling = ($prev: HTMLElement, direction: 'prev' | 'next') => {
-    const siblingKey =
-      direction === 'next'
-        ? 'nextElementSibling'
-        : ('previousElementSibling' as const);
+  const getSibling = (
+    direction: FocusDirections,
+    $target: HTMLElement,
+  ): HTMLElement | null => {
+    const targetOrSubcontainerSelector = subcontainer
+        ? [targetSelector, subcontainer].join(',')
+        : targetSelector,
+      siblingKey =
+        direction === 'forward'
+          ? 'nextElementSibling'
+          : 'previousElementSibling';
 
-    let $next = $prev[siblingKey] as HTMLElement | null;
+    let $current: HTMLElement | null = $target[siblingKey] as HTMLElement,
+      $found: HTMLElement | null =
+        $current &&
+        ($current.matches(targetSelector)
+          ? $current
+          : $current.querySelector(targetSelector));
 
-    while (skip && $next && $next.matches(skip)) {
-      $next = $next[siblingKey] as HTMLElement;
+    while (
+      $current &&
+      (!$found || !$found.matches(targetOrSubcontainerSelector))
+    ) {
+      $current = $current[siblingKey] as HTMLElement;
+      $found =
+        $current &&
+        ($current.matches(targetSelector)
+          ? $current
+          : $current.querySelector(targetSelector));
     }
 
-    if (!$next) return;
-    if (!$next.matches(target)) $next = $next.querySelector(target);
-
-    if (!$next)
-      throw new Error(
-        `The target of keyboard focus handler "${target}" was not found within ${getElementSelector(
-          $prev,
-        )}.`,
-      );
-
-    if (handleSibling) $next = handleSibling($next);
-    if (!$next)
-      throw new Error('The handleSibling method did not return any element!');
-
-    if (state.useHoverIndex) $next.setAttribute('tabindex', '0');
-    $next.focus();
+    return $found;
   };
 
-  const getEdgeChild = (at: 'first' | 'last'): HTMLElement | null => {
-    const $container = toValue(container);
-    if (!$container) return null;
-
+  const getEdgeChild = (
+    $container: HTMLElement,
+    at: 'first' | 'last',
+  ): HTMLElement | null => {
     let $child = (
       at === 'first'
         ? $container.firstElementChild
         : $container.lastElementChild
     ) as HTMLElement | null;
 
-    if ($child && !$child.matches(target))
-      return $child.querySelector<HTMLElement>(target);
+    if ($child && !$child.matches(targetSelector))
+      return getSibling(at === 'first' ? 'forward' : 'backward', $child);
+
     return $child;
   };
 
-  const focusEdgeChild = (at: 'first' | 'last'): void => {
-    const $child = getEdgeChild(at);
+  const focusEdgeChild = (
+    $container: HTMLElement,
+    at: 'first' | 'last',
+  ): void => {
+    const $child = getEdgeChild($container, at);
     if ($child) $child.focus();
     return;
   };
 
   const handleFocusByKeyboard = (e: KeyboardEvent) => {
     const $target = e.target as HTMLElement;
-    if (!$target.matches(target)) return;
+    if (!$target.matches(targetSelector)) return;
 
     const key = e.key,
       isArrowFocus = directionKeys.value.includes(key),
@@ -174,18 +191,18 @@ export const useKeyboardArrowFocus = ({
 
     if (!isArrowFocus && !isTabFocus) return;
 
-    const $container = toValue(container);
+    const $container = getContainerFrom($target);
     if (!$container) return;
 
     const focusDirection = isArrowFocus
         ? KEYS_TO_DIR_MAP[key as keyof typeof KEYS_TO_DIR_MAP]
         : e.shiftKey
-        ? 'prev'
-        : 'next',
-      isForward = focusDirection === 'next';
+        ? 'backward'
+        : 'forward',
+      isForward = focusDirection === 'forward';
 
     if ($container === $target)
-      return focusEdgeChild(isForward ? 'first' : 'last');
+      return focusEdgeChild($container, isForward ? 'first' : 'last');
 
     const isDirectChild = $target.parentElement === $container,
       $targetContainer = isDirectChild
@@ -194,23 +211,38 @@ export const useKeyboardArrowFocus = ({
 
     if (!$targetContainer) return;
 
-    const notEdgeElementSelector = isForward
-        ? ':not(:last-of-type)'
-        : ':not(:first-of-type)',
-      isNotEdgeElement = $targetContainer.matches(notEdgeElementSelector);
+    const $sibling = getSibling(focusDirection, $targetContainer);
 
-    if (isLoopAllowed || isNotEdgeElement) e.preventDefault();
+    if (isLoopAllowed || $sibling) e.preventDefault();
 
-    if (isNotEdgeElement || !isLoopAllowed)
-      return focusSibling($targetContainer, focusDirection);
+    if ($sibling) return $sibling.focus();
+    if (!isLoopAllowed) return;
 
-    if (!isForward && $targetContainer.matches(':first-of-type')) {
-      focusEdgeChild('last');
+    if (!isForward && !$sibling) {
+      if (subcontainer && $container.matches(subcontainer)) {
+        const $outerNext = getSibling(focusDirection, $container);
+        if ($outerNext) return $outerNext.focus();
+
+        const $outerContainer = toValue(container);
+        $outerContainer && focusEdgeChild($outerContainer, 'last');
+        return;
+      }
+
+      focusEdgeChild($container, 'last');
       return;
     }
 
-    if (isForward && $targetContainer.matches(':last-of-type')) {
-      focusEdgeChild('first');
+    if (isForward && !$sibling) {
+      if (subcontainer && $container.matches(subcontainer)) {
+        const $outerNext = getSibling(focusDirection, $container);
+        if ($outerNext) return $outerNext.focus();
+
+        const $outerContainer = toValue(container);
+        $outerContainer && focusEdgeChild($outerContainer, 'first');
+        return;
+      }
+
+      focusEdgeChild($container, 'first');
       return;
     }
   };
@@ -230,7 +262,7 @@ export const useKeyboardArrowFocus = ({
 
     if (handleTabindex) return handleTabindex($container);
 
-    const $first = getEdgeChild('first');
+    const $first = getEdgeChild($container, 'first');
     if (!$first) return;
     $first.setAttribute('tabindex', '0');
 
@@ -241,13 +273,15 @@ export const useKeyboardArrowFocus = ({
 
   const makeFirstChildFocusable = () => {
     if (!state.useHoverIndex) return;
-    if (handleTabindex) {
-      const $container = toValue(container);
-      return $container && handleTabindex($container);
-    }
 
-    const $first = getEdgeChild('first');
+    const $container = toValue(container);
+    if (!$container) return;
+
+    if (handleTabindex) return $container && handleTabindex($container);
+
+    const $first = getEdgeChild($container, 'first');
     if (!$first) return;
+
     $first.setAttribute('tabindex', '0');
   };
 
