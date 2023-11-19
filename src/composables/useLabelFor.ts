@@ -4,28 +4,29 @@ const ARIA_LABEL_BY_ATTRIBUTE = 'aria-labelledby',
   ARIA_DESCRIPTION_BY_ATTRIBUTE = 'aria-describedby';
 
 const createAriaConnectionHook = (ariaProperty: string) => {
-  return (targetId: string, id: MaybeRef<string>) => {
-    const withTarget = (callback: ($target: HTMLElement) => void) => {
-      const $target = document.getElementById(targetId);
-      if (!$target) return;
-      callback($target);
+  return (targetId: string | string[], id: MaybeRef<string>) => {
+    const targetsIds = Array.isArray(targetId) ? targetId : [targetId];
+
+    const withEachTarget = (callback: ($target: HTMLElement) => void) => {
+      targetsIds.forEach((id: string) => {
+        const $target = document.getElementById(id);
+        if (!$target) return;
+        callback($target);
+      });
     };
 
     const setProperty = (label: string) => {
-      withTarget(($target) => {
+      withEachTarget(($target) => {
         const attribute = $target.getAttribute(ariaProperty);
-
         const newValue = !attribute ? label : `${attribute} ${label}`;
-
         $target.setAttribute(ariaProperty, newValue);
       });
     };
 
     const removeProperty = (label: string) => {
-      withTarget(($target) => {
+      withEachTarget(($target) => {
         const attribute = $target.getAttribute(ariaProperty);
         if (!attribute) return;
-
         $target.setAttribute(ariaProperty, attribute.replace(label, '').trim());
       });
     };
