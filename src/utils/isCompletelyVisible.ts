@@ -20,11 +20,6 @@ export const isCompletelyVisibleOnVertical = (
   const parent = $parent.getBoundingClientRect();
   const child = $child.getBoundingClientRect();
 
-  console.log('***AUTOCOMPLETE:', {
-    parent: { top: parent.top, bottom: parent.bottom },
-    child: { top: child.top, bottom: child.bottom },
-  });
-
   /**
    * child.top -> current position of the element into the viewport screen
    * child.bottom (top + height) -> vertical end position of the element into the viewport screen
