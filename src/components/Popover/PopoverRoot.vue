@@ -14,7 +14,7 @@ import {
 
 export type PopoverState = DefaultPopoverState;
 
-export type PopoverProvider = Popover;
+export type PopoverProvider = Popover<PopoverState>;
 
 export type PopoverRootProps = {
   id?: string;

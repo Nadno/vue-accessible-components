@@ -16,7 +16,7 @@ import { RefSetter } from '../utils';
 
 export type TooltipState = PopoverState;
 
-export type TooltipProvider = PopoverData &
+export type TooltipProvider = PopoverData<TooltipState> &
   PopoverActions & {
     asLabel: boolean,
     setTooltipContainerRef: RefSetter;
